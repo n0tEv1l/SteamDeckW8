@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Steam Deck — Ожидание</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #0a0c12;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            font-family: system-ui, 'Segoe UI', 'Inter', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+            padding: 1rem;
+        }
+
+        #root {
+            min-height: 560px;
+            background: #0f1117;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1.5rem;
+            position: relative;
+            overflow: hidden;
+            border-radius: 32px;
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.02);
+            max-width: 580px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 22px;
+            font-weight: 520;
+            color: rgba(255, 255, 255, 0.92);
+            text-align: center;
+            margin-bottom: 0.3rem;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.32);
+            text-align: center;
+            margin-bottom: 1.8rem;
+        }
+
+        .deck-eyes-container {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 2rem;
+            user-select: none;
+            filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.6));
+            transition: transform 0.15s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            will-change: transform;
+        }
+
+        .deck-img {
+            width: 360px;
+            max-width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #1a1f2e, #0f1119);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .eye {
+            position: absolute;
+            width: 44px;
+            height: 44px;
+            background: radial-gradient(circle at 35% 35%, #f0f2f8, #b8c0d0);
+            border-radius: 50%;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.9), inset 0 0 0 3px rgba(0,0,0,0.2);
+            transition: transform 0.08s linear;
+            will-change: transform;
+            z-index: 15;
+            cursor: default;
+        }
+        
+        .pupil {
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background: radial-gradient(circle at 35% 40%, #1a1f2a, #2d2f3e);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: transform 0.06s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            box-shadow: inset 0 0 4px rgba(0,0,0,0.9), 0 0 5px rgba(255,255,200,0.4);
+        }
+        
+        .pupil::after {
+            content: "";
+            position: absolute;
+            width: 7px;
+            height: 7px;
+            background: rgba(255, 255, 245, 0.95);
+            border-radius: 50%;
+            top: 3px;
+            left: 4px;
+            opacity: 0.9;
+        }
+
+        .eye-left {
+            left: 8.5%;
+            top: 37%;
+        }
+        .eye-right {
+            left: 79.5%;
+            top: 37%;
+        }
+
+        .timer-box {
+            background: rgba(255, 255, 255, 0.04);
+            border: 0.5px solid rgba(255, 255, 255, 0.08);
+            border-radius: 28px;
+            padding: 1.5rem 2rem;
+            text-align: center;
+            width: 100%;
+            backdrop-filter: blur(2px);
+        }
+
+        .timer-label {
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.3);
+            margin-bottom: 0.8rem;
+        }
+
+        .timer-digits {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .digit-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .digit {
+            font-size: 36px;
+            font-weight: 550;
+            color: rgba(255, 255, 255, 0.86);
+            font-variant-numeric: tabular-nums;
+            line-height: 1;
+            min-width: 58px;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 6px 10px;
+            border-radius: 16px;
+        }
+
+        .digit-sub {
+            font-size: 9px;
+            color: rgba(255, 255, 255, 0.28);
+        }
+
+        .sep {
+            font-size: 32px;
+            color: rgba(255, 255, 255, 0.2);
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 550px) {
+            .deck-img { width: 310px; }
+            .eye { width: 36px; height: 36px; }
+            .pupil { width: 18px; height: 18px; }
+            .pupil::after { width: 5px; height: 5px; top: 3px; left: 3px; }
+            .eye-left { left: 7%; top: 36%; }
+            .eye-right { left: 81%; top: 36%; }
+            .digit { font-size: 28px; min-width: 48px; }
+            .sep { font-size: 26px; }
+        }
+
+        @media (max-width: 450px) {
+            .deck-img { width: 270px; }
+            .eye { width: 30px; height: 30px; }
+            .pupil { width: 15px; height: 15px; }
+            .pupil::after { width: 4px; height: 4px; top: 2px; left: 3px; }
+            .eye-left { left: 6%; top: 35%; }
+            .eye-right { left: 82%; top: 35%; }
+            .digit { font-size: 24px; min-width: 42px; }
+            .sep { font-size: 22px; }
+        }
+    </style>
+</head>
+<body>
+<div id="root">
+    <h1>Страница ожидания Steam Deck</h1>
+    <p class="subtitle">Я слежу за тобой</p>
+
+    <div class="deck-eyes-container" id="deckContainer">
+        <img class="deck-img" id="deckImg"
+             src="D:\User\Загрузки\Без имени-1.png"
+             alt="Steam Deck">
+        
+        <div class="eye eye-left" id="eyeLeft">
+            <div class="pupil" id="pupilLeft"></div>
+        </div>
+        <div class="eye eye-right" id="eyeRight">
+            <div class="pupil" id="pupilRight"></div>
+        </div>
+    </div>
+
+    <div class="timer-box">
+        <div class="timer-label">Жду Steam Deck уже</div>
+        <div class="timer-digits">
+            <div class="digit-block"><div class="digit" id="d-days">00</div><div class="digit-sub">дней</div></div>
+            <div class="sep">:</div>
+            <div class="digit-block"><div class="digit" id="d-hours">00</div><div class="digit-sub">часов</div></div>
+            <div class="sep">:</div>
+            <div class="digit-block"><div class="digit" id="d-mins">00</div><div class="digit-sub">минут</div></div>
+            <div class="sep">:</div>
+            <div class="digit-block"><div class="digit" id="d-secs">00</div><div class="digit-sub">секунд</div></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Таймер стартует с 3 дней
+    const startTime = Date.now() - (1000 * 60 * 60 * 24 * 3);
+    
+    function pad(n) {
+        return String(n).padStart(2, '0');
+    }
+    
+    function updateTimer() {
+        const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+        document.getElementById('d-days').textContent = pad(Math.floor(elapsedSeconds / 86400));
+        document.getElementById('d-hours').textContent = pad(Math.floor((elapsedSeconds % 86400) / 3600));
+        document.getElementById('d-mins').textContent = pad(Math.floor((elapsedSeconds % 3600) / 60));
+        document.getElementById('d-secs').textContent = pad(elapsedSeconds % 60);
+    }
+    setInterval(updateTimer, 1000);
+    updateTimer();
+
+    // ========== ГЛАЗКИ (следят за мышкой) ==========
+    const eyeLeft = document.getElementById('eyeLeft');
+    const eyeRight = document.getElementById('eyeRight');
+    const pupilLeft = document.getElementById('pupilLeft');
+    const pupilRight = document.getElementById('pupilRight');
+    const rootEl = document.getElementById('root');
+    let isInsideRoot = false;
+    
+    function getMaxOffset() {
+        const width = window.innerWidth;
+        if (width <= 450) return 8;
+        if (width <= 550) return 10;
+        return 13;
+    }
+    
+    function moveEyes(clientX, clientY) {
+        if (!eyeLeft || !eyeRight) return;
+        const leftRect = eyeLeft.getBoundingClientRect();
+        const rightRect = eyeRight.getBoundingClientRect();
+        
+        const leftCenterX = leftRect.left + leftRect.width / 2;
+        const leftCenterY = leftRect.top + leftRect.height / 2;
+        const rightCenterX = rightRect.left + rightRect.width / 2;
+        const rightCenterY = rightRect.top + rightRect.height / 2;
+        
+        let dxL = clientX - leftCenterX;
+        let dyL = clientY - leftCenterY;
+        let dxR = clientX - rightCenterX;
+        let dyR = clientY - rightCenterY;
+        
+        const maxOffset = getMaxOffset();
+        
+        const distL = Math.hypot(dxL, dyL);
+        let moveXL = dxL, moveYL = dyL;
+        if (distL > maxOffset) {
+            moveXL = (dxL / distL) * maxOffset;
+            moveYL = (dyL / distL) * maxOffset;
+        }
+        
+        const distR = Math.hypot(dxR, dyR);
+        let moveXR = dxR, moveYR = dyR;
+        if (distR > maxOffset) {
+            moveXR = (dxR / distR) * maxOffset;
+            moveYR = (dyR / distR) * maxOffset;
+        }
+        
+        pupilLeft.style.transform = `translate(calc(-50% + ${moveXL}px), calc(-50% + ${moveYL}px))`;
+        pupilRight.style.transform = `translate(calc(-50% + ${moveXR}px), calc(-50% + ${moveYR}px))`;
+    }
+    
+    function resetEyesToCenter() {
+        pupilLeft.style.transform = 'translate(-50%, -50%)';
+        pupilRight.style.transform = 'translate(-50%, -50%)';
+    }
+    
+    rootEl.addEventListener('mouseenter', () => {
+        isInsideRoot = true;
+    });
+    rootEl.addEventListener('mouseleave', () => {
+        isInsideRoot = false;
+        resetEyesToCenter();
+    });
+    
+    document.addEventListener('mousemove', (e) => {
+        if (isInsideRoot) {
+            const rect = rootEl.getBoundingClientRect();
+            if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
+                moveEyes(e.clientX, e.clientY);
+            } else {
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                moveEyes(centerX, centerY);
+            }
+        } else if (rootEl) {
+            const rect = rootEl.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            moveEyes(centerX, centerY);
+        }
+    });
+    
+    setTimeout(() => {
+        if (rootEl) {
+            const rect = rootEl.getBoundingClientRect();
+            moveEyes(rect.left + rect.width/2, rect.top + rect.height/2);
+        }
+    }, 100);
+    
+    // Моргание глазок
+    setInterval(() => {
+        if (eyeLeft && eyeRight) {
+            eyeLeft.style.transform = 'scaleY(0.08)';
+            eyeRight.style.transform = 'scaleY(0.08)';
+            setTimeout(() => {
+                if (eyeLeft) eyeLeft.style.transform = '';
+                if (eyeRight) eyeRight.style.transform = '';
+            }, 100);
+        }
+    }, 4200);
+    
+    // 3D-эффект при движении мыши
+    const deckContainer = document.getElementById('deckContainer');
+    let isHovering = false;
+    
+    rootEl.addEventListener('mouseenter', () => {
+        isHovering = true;
+    });
+    rootEl.addEventListener('mouseleave', () => {
+        isHovering = false;
+        if (deckContainer) deckContainer.style.transform = '';
+    });
+    
+    rootEl.addEventListener('mousemove', (e) => {
+        if (!isHovering) return;
+        const rect = rootEl.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        let dx = (e.clientX - centerX) / (rect.width / 2);
+        let dy = (e.clientY - centerY) / (rect.height / 2);
+        const rotateY = dx * 8;
+        const rotateX = -dy * 5;
+        if (deckContainer) {
+            deckContainer.style.transform = `perspective(700px) rotateY(${rotateY}deg) rotateX(${rotateX}deg)`;
+        }
+    });
+    
+    let floatAngle = 0;
+    function gentleFloat() {
+        floatAngle += 0.014;
+        if (!isHovering && deckContainer) {
+            deckContainer.style.transform = `translateY(${Math.sin(floatAngle) * 4}px)`;
+        }
+        requestAnimationFrame(gentleFloat);
+    }
+    gentleFloat();
+    
+    window.addEventListener('resize', () => {
+        if (rootEl) {
+            const rect = rootEl.getBoundingClientRect();
+            moveEyes(rect.left + rect.width/2, rect.top + rect.height/2);
+        }
+    });
+</script>
+</body>
+</html>
