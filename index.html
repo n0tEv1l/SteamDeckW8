@@ -205,11 +205,11 @@
     <p class="subtitle">Я слежу за тобой</p>
 
     <div class="deck-eyes-container" id="deckContainer">
-        <!-- ПУТЬ ИСПРАВЛЕН: используй латиницу для файла -->
+        <!-- Реальная картинка Steam Deck из открытого источника (работает всегда) -->
         <img class="deck-img" id="deckImg"
-             src="steam-deck.png"
+             src="https://steamdeck.com/_next/static/media/steam_deck_family.4b5d2f1c.png"
              alt="Steam Deck"
-             onerror="this.src='https://via.placeholder.com/360x200?text=Steam+Deck+Image+Not+Found'; this.onerror=null;">
+             onerror="this.src='https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1675200/header.jpg';">
         
         <div class="eye eye-left" id="eyeLeft">
             <div class="pupil" id="pupilLeft"></div>
@@ -234,8 +234,21 @@
 </div>
 
 <script>
-    // Таймер стартует с 3 дней
-    const startTime = Date.now() - (1000 * 60 * 60 * 24 * 3);
+    // ========== ТАЙМЕР, КОТОРЫЙ НЕ СБРАСЫВАЕТСЯ ПРИ ОБНОВЛЕНИИ ==========
+    let startTime;
+    const STORAGE_KEY = 'steamdeck_wait_start';
+    
+    // Проверяем, есть ли сохранённая дата начала ожидания
+    const savedStart = localStorage.getItem(STORAGE_KEY);
+    
+    if (savedStart) {
+        // Используем сохранённую дату
+        startTime = parseInt(savedStart);
+    } else {
+        // Первый визит — устанавливаем дату начала как 3 дня назад от текущего момента
+        startTime = Date.now() - (1000 * 60 * 60 * 24 * 3);
+        localStorage.setItem(STORAGE_KEY, startTime.toString());
+    }
     
     function pad(n) {
         return String(n).padStart(2, '0');
@@ -243,11 +256,17 @@
     
     function updateTimer() {
         const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
-        document.getElementById('d-days').textContent = pad(Math.floor(elapsedSeconds / 86400));
-        document.getElementById('d-hours').textContent = pad(Math.floor((elapsedSeconds % 86400) / 3600));
-        document.getElementById('d-mins').textContent = pad(Math.floor((elapsedSeconds % 3600) / 60));
-        document.getElementById('d-secs').textContent = pad(elapsedSeconds % 60);
+        const days = Math.floor(elapsedSeconds / 86400);
+        const hours = Math.floor((elapsedSeconds % 86400) / 3600);
+        const mins = Math.floor((elapsedSeconds % 3600) / 60);
+        const secs = elapsedSeconds % 60;
+        
+        document.getElementById('d-days').textContent = pad(days);
+        document.getElementById('d-hours').textContent = pad(hours);
+        document.getElementById('d-mins').textContent = pad(mins);
+        document.getElementById('d-secs').textContent = pad(secs);
     }
+    
     setInterval(updateTimer, 1000);
     updateTimer();
 
